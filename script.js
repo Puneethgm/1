@@ -3,17 +3,19 @@ let size = 4; // Default size of 4x4
 let intervalId = null;
 
 const puzzleGrid = document.getElementById('puzzleGrid');
+const solutionContainer = document.getElementById('solutionContainer');
 
 // Function to create a puzzle of a specific size
 function createPuzzle() {
     size = parseInt(document.getElementById('gridSize').value);
-    puzzleGrid.style.gridTemplateColumns = `repeat(${size}, 60px)`; // Adjust the grid layout based on size
+    puzzleGrid.style.gridTemplateColumns = `repeat(${size}, 65px)`; // Adjust the grid layout based on size
 
     // Generate the ordered puzzle (1 to size^2 - 1 with one blank)
     puzzle = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
     puzzle.push(null); // The last cell is blank (null)
 
     renderPuzzle();
+    solutionContainer.innerHTML = ''; // Clear solution steps when creating a new puzzle
 }
 
 // Function to render the puzzle grid
@@ -49,6 +51,7 @@ function orderPuzzle() {
     puzzle = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
     puzzle.push(null); // The last cell is blank
     renderPuzzle();
+    solutionContainer.innerHTML = ''; // Clear solution steps when ordering
 }
 
 // Function to find the position of the blank cell
@@ -56,7 +59,6 @@ function findBlank(puzzle) {
     return puzzle.indexOf(null);
 }
 
-// A* Solver algorithm to calculate the moves needed to solve the puzzle
 // Function to solve the puzzle and display the number of moves
 function solvePuzzle() {
     const initialState = puzzle.slice();
@@ -68,9 +70,36 @@ function solvePuzzle() {
         const numberOfMoves = solution.length - 1; // Exclude the initial state
         alert(`Puzzle solved in ${numberOfMoves} moves.`);
         animateSolution(solution);
+
+        // Display solution steps as matrices
+        displaySolutionMatrices(solution);
     } else {
         alert('No solution found.');
     }
+}
+
+// Display solution steps as matrices
+function displaySolutionMatrices(solution) {
+    solutionContainer.innerHTML = ''; // Clear previous solutions
+    solution.forEach((step, index) => {
+        const matrixDiv = document.createElement('div');
+        matrixDiv.classList.add('matrix');
+        matrixDiv.style.gridTemplateColumns = `repeat(${size}, 65px)`; // Set columns based on size
+
+        const stepLabel = document.createElement('div');
+        stepLabel.classList.add('stepLabel');
+        stepLabel.textContent = `Step ${index}`; // Start labeling from Step 0
+        solutionContainer.appendChild(stepLabel); // Add label outside the matrix
+
+        step.forEach((number) => {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.textContent = number !== null ? number : ''; // Show blank for null
+            matrixDiv.appendChild(cell);
+        });
+
+        solutionContainer.appendChild(matrixDiv); // Add matrix after label
+    });
 }
 
 // A* algorithm to find the shortest path
